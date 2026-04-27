@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Onchiche225 - Boutique chicha Côte d’Ivoire</title>
+
+<meta name="description" content="Accessoires et consommables pour chicha — catalogue, panier et commande par WhatsApp. Livraison rapide en Côte d’Ivoire.">
+
+<!-- ✅ GOOGLE VERIFICATION -->
+<meta name="google-site-verification" content="sq_C6JShjoe70qwBtihr9rEroCLI003u-83gjJIIHdc">
+
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="site-header">
+
+<div class="header-top">
+<h1 class="logo">
+<a href="index.html" class="logo-link">
+<img src="logo.png" alt="Logo Onchiche225" class="site-logo" width="320" height="74">
+</a>
+</h1>
+
+<button type="button" class="nav-toggle" data-i18n-aria-label="open_menu" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="main-nav">☰</button>
+</div>
+
+<nav id="main-nav" class="main-nav">
+<a href="index.html" data-i18n="nav_home">Accueil</a>
+<a href="products.html" data-i18n="nav_products">Produits</a>
+<a href="cart.html"><span data-i18n="nav_cart">Panier</span> 🛒 (<span id="cart-count">0</span>)</a>
+<a href="contact.html" data-i18n="nav_contact">Contact</a>
+</nav>
+<div class="lang-switch" aria-label="Language switcher">
+<button type="button" class="lang-btn" data-lang="fr" data-i18n="lang_fr">FR</button>
+<button type="button" class="lang-btn" data-lang="en" data-i18n="lang_en">EN</button>
+</div>
+
+</header>
+
+<main>
+
+<section class="promo-strip reveal-on-scroll is-visible">
+<p class="promo-title" data-i18n="promo_title">Offre Flash -10% cette semaine</p>
+<p class="promo-subline"><span data-i18n="promo_countdown_label">Se termine dans</span> <strong id="promo-countdown">--:--:--</strong></p>
+</section>
+
+<section class="home hero">
+<p class="eyebrow" data-i18n="home_badge">Boutique · Toute la Côte d'Ivoire</p>
+
+<h2 data-i18n="home_title">Bienvenue chez Onchiche225</h2>
+
+<p class="hero-lead" data-i18n="home_lead_hero">Accessoires et consommables pour chicha avec une experience d'achat fluide, des conseils sur mesure et une commande rapide via WhatsApp.</p>
+
+<div class="hero-benefits" aria-label="Points forts">
+<span class="hero-chip" data-i18n="home_chip_trending">Produits tendances</span>
+<span class="hero-chip" data-i18n="home_chip_prices">Prix transparents</span>
+<span class="hero-chip" data-i18n="home_chip_delivery">Livraison Cote d'Ivoire</span>
+</div>
+
+<p class="hero-cta">
+<a href="products.html" class="cta-link"><span data-i18n="home_cta">Voir le catalogue</span> <span class="cta-arrow">→</span></a>
+</p>
+</section>
+
+<section class="products">
+<h2 data-i18n="popular_products">Produits populaires</h2>
+<div id="popular-products" class="product-grid"></div>
+</section>
+
+</main>
+
+<footer>
+<p data-i18n="footer_line">© 2026 Onchiche225 - Boutique de chicha · Livraison dans toute la Cote d'Ivoire</p>
+</footer>
+
+<script src="products.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

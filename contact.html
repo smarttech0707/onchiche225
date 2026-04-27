@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact - Onchiche225</title>
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="site-header">
+<div class="header-top">
+<h1 class="logo">
+<a href="index.html" class="logo-link"><img src="logo.png" alt="Logo Onchiche225" class="site-logo" width="320" height="74" decoding="async" onerror="this.onerror=null;this.src='logo.svg';"></a>
+</h1>
+<button type="button" class="nav-toggle" data-i18n-aria-label="open_menu" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="main-nav">☰</button>
+</div>
+<nav id="main-nav" class="main-nav">
+<a href="index.html" data-i18n="nav_home">Accueil</a>
+<a href="products.html" data-i18n="nav_products">Produits</a>
+<a href="cart.html"><span data-i18n="nav_cart">Panier</span> 🛒 (<span id="cart-count">0</span>)</a>
+<a href="contact.html" data-i18n="nav_contact">Contact</a>
+</nav>
+<div class="lang-switch" aria-label="Language switcher">
+<button type="button" class="lang-btn" data-lang="fr" data-i18n="lang_fr">FR</button>
+<button type="button" class="lang-btn" data-lang="en" data-i18n="lang_en">EN</button>
+</div>
+</header>
+
+<main>
+<section class="contact">
+<h2 data-i18n="contact_title">Contact</h2>
+<p class="contact-intro" data-i18n="contact_intro">Une question ou une commande personnalisée ? Utilisez le formulaire, WhatsApp ou l’e-mail.</p>
+
+<form id="contact-form" class="contact-form" action="#" method="post">
+<div class="field">
+<label for="contact-name" data-i18n="label_name">Nom</label>
+<input id="contact-name" name="name" type="text" required autocomplete="name" placeholder="Votre nom">
+</div>
+<div class="field">
+<label for="contact-email" data-i18n="label_email">E-mail</label>
+<input id="contact-email" name="email" type="email" required autocomplete="email" placeholder="vous@exemple.com">
+</div>
+<div class="field">
+<label for="contact-subject" data-i18n="contact_subject_optional">Objet (optionnel)</label>
+<input id="contact-subject" name="subject" type="text" maxlength="200" placeholder="Sujet de votre message">
+</div>
+<div class="field">
+<label for="contact-message" data-i18n="contact_message">Message</label>
+<textarea id="contact-message" name="message" rows="5" required placeholder="Votre message…"></textarea>
+</div>
+<div class="contact-form-actions">
+<button type="submit" class="btn-secondary" data-i18n="contact_email_send">Envoyer par e-mail</button>
+<button type="button" class="btn-whatsapp" id="contact-form-whatsapp" data-i18n="contact_wa_send">Envoyer sur WhatsApp</button>
+</div>
+</form>
+
+<ul class="contact-list">
+<li><strong>WhatsApp</strong> — <a id="contact-wa" href="#" data-i18n="contact_open_chat">Ouvrir la discussion</a></li>
+<li><strong data-i18n="contact_phone_wa">Téléphone / WhatsApp</strong> — <a id="contact-tel" href="#">+225 …</a></li>
+<li><strong>E-mail</strong> — <a id="contact-mailto" href="mailto:onchiche225f@gmail.com">onchiche225f@gmail.com</a></li>
+</ul>
+<p class="contact-note" data-i18n="contact_note">Le numéro affiché est le même que pour les commandes et messages WhatsApp.</p>
+</section>
+</main>
+
+<footer>
+<p data-i18n="footer_line">© 2026 Onchiche225 - Boutique de chicha · Livraison dans toute la Cote d'Ivoire</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
+

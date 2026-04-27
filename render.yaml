@@ -1,0 +1,21 @@
+# Blueprint Render : https://render.com/docs/blueprint-spec
+# Plan gratuit : pas de disque persistant — les changements admin dans products.json
+# peuvent être perdus au redémarrage / nouveau déploiement. Pour les conserver :
+# passez à un plan avec disque et définissez PRODUCTS_FILE=/chemin/monté/products.json
+# (voir .env.example).
+
+services:
+  - type: web
+    name: onchiche225
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: JWT_SECRET
+        generateValue: true

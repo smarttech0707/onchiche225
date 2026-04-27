@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panier - Onchiche225</title>
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="site-header">
+<div class="header-top">
+<h1 class="logo">
+<a href="index.html" class="logo-link"><img src="logo.png" alt="Logo Onchiche225" class="site-logo" width="320" height="74" decoding="async" onerror="this.onerror=null;this.src='logo.svg';"></a>
+</h1>
+<button type="button" class="nav-toggle" data-i18n-aria-label="open_menu" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="main-nav">☰</button>
+</div>
+<nav id="main-nav" class="main-nav">
+<a href="index.html" data-i18n="nav_home">Accueil</a>
+<a href="products.html" data-i18n="nav_products">Produits</a>
+<a href="cart.html"><span data-i18n="nav_cart">Panier</span> 🛒 (<span id="cart-count">0</span>)</a>
+<a href="contact.html" data-i18n="nav_contact">Contact</a>
+</nav>
+<div class="lang-switch" aria-label="Language switcher">
+<button type="button" class="lang-btn" data-lang="fr" data-i18n="lang_fr">FR</button>
+<button type="button" class="lang-btn" data-lang="en" data-i18n="lang_en">EN</button>
+</div>
+</header>
+
+<main>
+<section class="cart">
+<h2 data-i18n="cart_title">Votre panier</h2>
+<ul id="cart-items"></ul>
+<p class="cart-empty" id="cart-empty" data-i18n="cart_empty_text">Votre panier est vide pour le moment.</p>
+<h3><span data-i18n="cart_total">Total</span> : <span id="total">0</span> FCFA</h3>
+<div class="cart-buttons">
+<button type="button" onclick="checkout()" data-i18n="cart_checkout">Commander via WhatsApp</button>
+<button type="button" onclick="clearCart()" data-i18n="cart_clear">Vider le panier</button>
+</div>
+</section>
+</main>
+
+<footer>
+<p data-i18n="footer_line">© 2026 Onchiche225 - Boutique de chicha · Livraison dans toute la Cote d'Ivoire</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
+

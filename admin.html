@@ -1,0 +1,199 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Onchiche225</title>
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="site-header">
+<div class="header-top">
+<h1 class="logo">
+<a href="index.html" class="logo-link"><img src="logo.png" alt="Logo Onchiche225" class="site-logo" width="320" height="74" decoding="async" onerror="this.onerror=null;this.src='logo.svg';"></a>
+</h1>
+<button type="button" class="nav-toggle" data-i18n-aria-label="open_menu" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="main-nav">☰</button>
+</div>
+<nav id="main-nav" class="main-nav">
+<a href="index.html" data-i18n="nav_home">Accueil</a>
+<a href="products.html" data-i18n="nav_products">Produits</a>
+<a href="cart.html"><span data-i18n="nav_cart">Panier</span> 🛒 (<span id="cart-count">0</span>)</a>
+<a href="contact.html" data-i18n="nav_contact">Contact</a>
+</nav>
+<div class="lang-switch" aria-label="Language switcher">
+<button type="button" class="lang-btn" data-lang="fr" data-i18n="lang_fr">FR</button>
+<button type="button" class="lang-btn" data-lang="en" data-i18n="lang_en">EN</button>
+</div>
+</header>
+
+<main>
+<section class="admin">
+<h2>Administration — produits</h2>
+<p class="admin-hint">Accès réservé à l’administrateur. Connectez-vous pour gérer le catalogue.</p>
+
+<form class="admin-form" id="admin-login-form" action="#" onsubmit="return false;">
+<div class="field">
+<label for="admin-id">Identifiant admin</label>
+<input id="admin-id" name="admin-id" type="text" autocomplete="username" placeholder="Votre identifiant" required>
+</div>
+<div class="field">
+<label for="admin-password">Mot de passe</label>
+<input id="admin-password" name="admin-password" type="password" autocomplete="current-password" placeholder="Votre mot de passe" required>
+</div>
+<button type="submit">Se connecter</button>
+</form>
+
+<p id="admin-auth-error" class="admin-error is-hidden">Identifiant ou mot de passe incorrect.</p>
+
+<div id="admin-panel" class="is-hidden">
+<p class="admin-hint">Les produits ajoutés ici apparaissent sur la page <a href="products.html">Produits</a> (fichier <code>data/products.json</code> sur le serveur).</p>
+
+<form class="admin-form" id="admin-form" action="#" onsubmit="return false;">
+<div class="field">
+<label for="name">Nom du produit</label>
+<input id="name" name="name" type="text" placeholder="Ex. : Kaloud aluminium" required>
+</div>
+<div class="field">
+<label for="price">Prix (FCFA)</label>
+<input id="price" name="price" type="number" min="0" step="100" placeholder="5000" required>
+</div>
+<div class="field">
+<label for="img">Image (URL, optionnel)</label>
+<input id="img" name="img" type="url" placeholder="https://…">
+</div>
+<button type="button" onclick="addProduct()">Ajouter au catalogue</button>
+</form>
+
+<div class="admin-actions">
+<button type="button" id="admin-logout">Se déconnecter</button>
+</div>
+
+<h3>Produits ajoutés</h3>
+<ul id="admin-list" class="admin-list"></ul>
+</div>
+</section>
+</main>
+
+<footer>
+<p data-i18n="footer_line">© 2026 Onchiche225 - Boutique de chicha · Livraison dans toute la Cote d'Ivoire</p>
+</footer>
+
+<script src="script.js"></script>
+<script>
+async function setAdminUIState(isLoggedIn) {
+  const loginForm = document.getElementById("admin-login-form");
+  const panel = document.getElementById("admin-panel");
+  const error = document.getElementById("admin-auth-error");
+  if (!loginForm || !panel || !error) return;
+  loginForm.classList.toggle("is-hidden", isLoggedIn);
+  panel.classList.toggle("is-hidden", !isLoggedIn);
+  if (isLoggedIn) error.classList.add("is-hidden");
+}
+
+async function loadAdminProducts() {
+  const response = await window.apiRequest("/api/products");
+  if (!response.ok) return [];
+  const data = await response.json();
+  return Array.isArray(data.products) ? data.products : [];
+}
+
+async function renderAdminList() {
+  const ul = document.getElementById("admin-list");
+  if (!ul) return;
+  const authenticated = window.isAdminAuthenticated ? await window.isAdminAuthenticated() : false;
+  if (!authenticated) {
+    ul.innerHTML = "";
+    return;
+  }
+  ul.innerHTML = "";
+  const products = await loadAdminProducts();
+  if (products.length === 0) {
+    ul.innerHTML = "<li class=\"admin-empty\">Aucun produit ajouté pour l’instant.</li>";
+    return;
+  }
+  products.forEach((p, index) => {
+    const li = document.createElement("li");
+    li.innerHTML =
+      "<span>" +
+      (p.name || "") +
+      " — " +
+      (p.price || "") +
+      " FCFA</span>" +
+      "<button type=\"button\" class=\"btn-delete\" data-i=\"" +
+      (p.id || index) +
+      "\">Supprimer</button>";
+    ul.appendChild(li);
+  });
+}
+
+async function addProduct() {
+  const authenticated = window.isAdminAuthenticated ? await window.isAdminAuthenticated() : false;
+  if (!authenticated) {
+    alert("Connexion admin requise.");
+    return;
+  }
+  const name = document.getElementById("name").value.trim();
+  const price = document.getElementById("price").value.trim();
+  const img = document.getElementById("img").value.trim();
+  if (!name || !price) {
+    alert("Indiquez au moins le nom et le prix.");
+    return;
+  }
+  const response = await window.apiRequest("/api/products", {
+    method: "POST",
+    body: JSON.stringify({ name, price: Number(price), img })
+  });
+  if (!response.ok) {
+    alert("Impossible d'ajouter le produit.");
+    return;
+  }
+  document.getElementById("admin-form").reset();
+  await renderAdminList();
+  alert("Produit ajouté avec succès.");
+}
+
+document.getElementById("admin-list").addEventListener("click", async function (e) {
+  const authenticated = window.isAdminAuthenticated ? await window.isAdminAuthenticated() : false;
+  if (!authenticated) return;
+  const btn = e.target.closest(".btn-delete");
+  if (!btn) return;
+  const id = String(btn.dataset.i || "");
+  if (!id) return;
+  const response = await window.apiRequest("/api/products/" + encodeURIComponent(id), {
+    method: "DELETE"
+  });
+  if (response.ok) await renderAdminList();
+});
+
+document.getElementById("admin-login-form").addEventListener("submit", async function () {
+  const id = document.getElementById("admin-id").value.trim();
+  const password = document.getElementById("admin-password").value;
+  const error = document.getElementById("admin-auth-error");
+  if (!window.loginAdmin || !(await window.loginAdmin(id, password))) {
+    error.classList.remove("is-hidden");
+    return;
+  }
+  await setAdminUIState(true);
+  await renderAdminList();
+});
+
+document.getElementById("admin-logout").addEventListener("click", async function () {
+  if (window.logoutAdmin) await window.logoutAdmin();
+  await setAdminUIState(false);
+  document.getElementById("admin-form").reset();
+});
+
+(async function initAdminPage() {
+  const auth = window.isAdminAuthenticated ? await window.isAdminAuthenticated() : false;
+  await setAdminUIState(auth);
+  await renderAdminList();
+})();
+</script>
+</body>
+</html>
+
