@@ -155,7 +155,7 @@ app.post("/api/products", authRequired, (req, res) => {
 
   const products = readProducts();
   const product = {
-    id: `p${Date.now()}`,
+    id: `p${Date.now()}${Math.random().toString(36).slice(2, 7)}`,
     name,
     price: Math.round(price),
     img: img || "https://via.placeholder.com/200/4A6CF7/ffffff?text=Produit"
