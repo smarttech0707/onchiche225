@@ -5,6 +5,8 @@ const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
 require("dotenv").config();
 
 const app = express();
@@ -52,9 +54,49 @@ function initProductsStore() {
 
 initProductsStore();
 
+const CLOUDINARY_CONFIGURED = !!(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+);
+
+if (CLOUDINARY_CONFIGURED) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+}
+
+function uploadToCloudinary(buffer) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "onchiche225", resource_type: "image" },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result.secure_url);
+      }
+    );
+    stream.end(buffer);
+  });
+}
+
+const UPLOADS_DIR = path.join(__dirname, "uploads");
+if (!CLOUDINARY_CONFIGURED) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Seules les images sont acceptées"));
+  }
+});
+
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json());
 app.use(cookieParser());
+if (!CLOUDINARY_CONFIGURED) app.use("/uploads", express.static(UPLOADS_DIR));
 
 function readProducts() {
   try {
@@ -144,13 +186,30 @@ app.get("/api/auth/status", (req, res) => {
   }
 });
 
-app.post("/api/products", authRequired, (req, res) => {
+app.post("/api/products", authRequired, upload.single("img"), async (req, res) => {
   const name = String(req.body?.name || "").trim();
-  const img = String(req.body?.img || "").trim();
   const price = Number(req.body?.price);
 
   if (!name || !Number.isFinite(price) || price < 0) {
     return res.status(400).json({ error: "Produit invalide" });
+  }
+
+  let img = "https://via.placeholder.com/200/4A6CF7/ffffff?text=Produit";
+
+  if (req.file) {
+    try {
+      if (CLOUDINARY_CONFIGURED) {
+        img = await uploadToCloudinary(req.file.buffer);
+      } else {
+        const ext = path.extname(req.file.originalname).toLowerCase() || ".jpg";
+        const filename = `img_${Date.now()}${Math.random().toString(36).slice(2, 7)}${ext}`;
+        fs.writeFileSync(path.join(UPLOADS_DIR, filename), req.file.buffer);
+        img = `/uploads/${filename}`;
+      }
+    } catch (err) {
+      console.error("Erreur upload image:", err.message);
+      return res.status(500).json({ error: "Echec de l'upload de l'image" });
+    }
   }
 
   const products = readProducts();
@@ -158,7 +217,7 @@ app.post("/api/products", authRequired, (req, res) => {
     id: `p${Date.now()}${Math.random().toString(36).slice(2, 7)}`,
     name,
     price: Math.round(price),
-    img: img || "https://via.placeholder.com/200/4A6CF7/ffffff?text=Produit"
+    img
   };
   products.push(product);
   writeProducts(products);
@@ -169,11 +228,14 @@ app.post("/api/products", authRequired, (req, res) => {
 app.delete("/api/products/:id", authRequired, (req, res) => {
   const id = String(req.params.id || "");
   const products = readProducts();
-  const filtered = products.filter((p) => String(p.id) !== id);
-  if (filtered.length === products.length) {
+  const product = products.find((p) => String(p.id) === id);
+  if (!product) {
     return res.status(404).json({ error: "Produit introuvable" });
   }
-  writeProducts(filtered);
+  if (product.img && product.img.startsWith("/uploads/")) {
+    fs.unlink(path.join(__dirname, product.img), () => {});
+  }
+  writeProducts(products.filter((p) => String(p.id) !== id));
   return res.json({ ok: true });
 });
 

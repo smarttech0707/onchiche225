@@ -63,8 +63,9 @@
 <input id="price" name="price" type="number" min="0" step="100" placeholder="5000" required>
 </div>
 <div class="field">
-<label for="img">Image (URL, optionnel)</label>
-<input id="img" name="img" type="url" placeholder="https://…">
+<label for="img">Image (depuis votre ordinateur, optionnel)</label>
+<input id="img" name="img" type="file" accept="image/*">
+<img id="img-preview" src="" alt="Aperçu de l'image" style="display:none;max-width:200px;margin-top:8px;border-radius:8px;border:1px solid #ddd;">
 </div>
 <button type="button" onclick="addProduct()">Ajouter au catalogue</button>
 </form>
@@ -139,20 +140,30 @@ async function addProduct() {
   }
   const name = document.getElementById("name").value.trim();
   const price = document.getElementById("price").value.trim();
-  const img = document.getElementById("img").value.trim();
+  const imgInput = document.getElementById("img");
   if (!name || !price) {
     alert("Indiquez au moins le nom et le prix.");
     return;
   }
-  const response = await window.apiRequest("/api/products", {
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("price", price);
+  if (imgInput.files && imgInput.files[0]) {
+    formData.append("img", imgInput.files[0]);
+  }
+  const response = await fetch("/api/products", {
     method: "POST",
-    body: JSON.stringify({ name, price: Number(price), img })
+    credentials: "include",
+    body: formData
   });
   if (!response.ok) {
     alert("Impossible d'ajouter le produit.");
     return;
   }
   document.getElementById("admin-form").reset();
+  const preview = document.getElementById("img-preview");
+  preview.style.display = "none";
+  preview.src = "";
   await renderAdminList();
   alert("Produit ajouté avec succès.");
 }
@@ -168,6 +179,21 @@ document.getElementById("admin-list").addEventListener("click", async function (
     method: "DELETE"
   });
   if (response.ok) await renderAdminList();
+});
+
+document.getElementById("img").addEventListener("change", function () {
+  const preview = document.getElementById("img-preview");
+  if (this.files && this.files[0]) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      preview.src = e.target.result;
+      preview.style.display = "block";
+    };
+    reader.readAsDataURL(this.files[0]);
+  } else {
+    preview.style.display = "none";
+    preview.src = "";
+  }
 });
 
 document.getElementById("admin-login-form").addEventListener("submit", async function () {
