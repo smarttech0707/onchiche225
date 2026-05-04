@@ -747,3 +747,59 @@ window.logoutAdmin = logoutAdmin;
 window.apiRequest = apiRequest;
 window.t = t;
 window.setLanguage = setLanguage;
+
+// ── Popup vérification d'âge 18+ ─────────────────────────────────────────────
+(function initAgePopup() {
+  if (localStorage.getItem("ageVerified") === "true") return;
+
+  const style = document.createElement("style");
+  style.textContent = `
+    .age-popup-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.88);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 99999;
+    }
+    .age-popup-content {
+      background: #fff; padding: 32px 24px; border-radius: 14px;
+      text-align: center; max-width: 380px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .age-popup-content h2 { margin-bottom: 14px; font-size: 1.4rem; }
+    .age-popup-content p { font-size: 14px; margin-bottom: 22px; line-height: 1.6; color: #444; }
+    .age-popup-buttons button {
+      margin: 8px; padding: 11px 22px;
+      border: none; border-radius: 8px; cursor: pointer;
+      font-size: 15px; font-weight: 600;
+    }
+    .age-popup-buttons .btn-accept { background: #16a34a; color: #fff; }
+    .age-popup-buttons .btn-refuse { background: #dc2626; color: #fff; }
+  `;
+  document.head.appendChild(style);
+
+  const overlay = document.createElement("div");
+  overlay.className = "age-popup-overlay";
+  overlay.innerHTML = `
+    <div class="age-popup-content">
+      <h2>🔞 Accès réservé</h2>
+      <p>
+        Ce site est destiné uniquement aux personnes majeures.<br><br>
+        ⚠️ La consommation de chicha est dangereuse pour la santé.<br>
+        🚫 Interdit aux moins de 18 ans.
+      </p>
+      <div class="age-popup-buttons">
+        <button class="btn-accept" id="age-accept">J'ai 18 ans ou plus</button>
+        <button class="btn-refuse" id="age-refuse">Je suis mineur</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  document.getElementById("age-accept").addEventListener("click", function () {
+    localStorage.setItem("ageVerified", "true");
+    overlay.remove();
+  });
+
+  document.getElementById("age-refuse").addEventListener("click", function () {
+    window.location.href = "https://www.google.com";
+  });
+})();
