@@ -1,5 +1,5 @@
 /** Numéro WhatsApp (indicatif 225 + numéro sans le 0 initial, chiffres uniquement). */
-const WHATSAPP_NUMBER = "225701678342";
+const WHATSAPP_NUMBER = "2250701678342";
 window.WHATSAPP_NUMBER = WHATSAPP_NUMBER;
 
 /** E-mail utilisé par le formulaire contact (mailto). */
