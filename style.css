@@ -1456,6 +1456,117 @@ footer p {
   font-style: italic;
 }
 
+/* ——— Section title commun ——— */
+.section-title {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 36px;
+  position: relative;
+}
+.section-title::after {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 4px;
+  background: var(--brand-accent);
+  border-radius: 2px;
+  margin: 10px auto 0;
+}
+
+/* ——— Comment commander ——— */
+.how-it-works {
+  padding: 60px 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+.step-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  transition: transform 0.3s var(--ease-out-expo), box-shadow 0.3s;
+}
+.step-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lift);
+}
+.step-icon {
+  font-size: 2.4rem;
+  margin-bottom: 8px;
+}
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--brand-accent);
+  color: #fff;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.9rem;
+  margin-bottom: 14px;
+}
+.step-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+.step-card p {
+  font-size: 0.88rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* ——— Pourquoi nous ——— */
+.why-us {
+  padding: 60px 20px;
+  background: var(--surface-soft);
+  margin-top: 20px;
+}
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.why-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 28px 20px;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.3s var(--ease-out-expo);
+}
+.why-card:hover { transform: translateY(-4px); }
+.why-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 12px;
+}
+.why-card h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+.why-card p {
+  font-size: 0.83rem;
+  color: #666;
+  line-height: 1.6;
+}
+
 /* ——— Accessibilité mouvement ——— */
 
 @media (prefers-reduced-motion: reduce) {
