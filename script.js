@@ -352,7 +352,21 @@ function initPromoCountdown() {
 
   const el = document.getElementById("promo-countdown");
   if (!el) return;
-  const target = promoConfig.endAt ? new Date(promoConfig.endAt) : new Date(Date.now() + (3 * 24 * 60 * 60 * 1000));
+
+  let target;
+  if (promoConfig.endAt) {
+    target = new Date(promoConfig.endAt);
+    localStorage.removeItem("promoEndAt");
+  } else {
+    const stored = localStorage.getItem("promoEndAt");
+    if (stored) {
+      target = new Date(Number(stored));
+    } else {
+      target = new Date(Date.now() + (7 * 24 * 60 * 60 * 1000));
+      localStorage.setItem("promoEndAt", String(target.getTime()));
+    }
+  }
+
   if (Number.isNaN(target.getTime())) {
     el.textContent = "--:--:--";
     return;
