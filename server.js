@@ -33,6 +33,24 @@ const TOKEN_COOKIE = "admin_token";
 const MONGODB_URI = process.env.MONGODB_URI || "";
 const USE_MONGO = !!MONGODB_URI;
 
+const settingsSchema = new mongoose.Schema({
+  key:   { type: String, required: true, unique: true },
+  value: { type: mongoose.Schema.Types.Mixed }
+});
+const Settings = mongoose.model("Settings", settingsSchema);
+
+async function getSetting(key, fallback) {
+  if (!USE_MONGO) return fallback;
+  try {
+    const doc = await Settings.findOne({ key }).lean();
+    return doc ? doc.value : fallback;
+  } catch { return fallback; }
+}
+
+async function setSetting(key, value) {
+  await Settings.findOneAndUpdate({ key }, { value }, { upsert: true });
+}
+
 const productSchema = new mongoose.Schema({
   id:       { type: String, required: true, unique: true },
   name:     { type: String, required: true },
@@ -164,15 +182,38 @@ app.get("/api/products", async (req, res) => {
   res.json({ products: readProductsFile() });
 });
 
-app.get("/api/public-config", (req, res) => {
-  res.json({
-    promo: {
-      enabled: PROMO_ENABLED,
-      titleFr:  PROMO_TITLE_FR,
-      titleEn:  PROMO_TITLE_EN,
-      endAt:    PROMO_END_AT || null
-    }
+app.get("/api/public-config", async (req, res) => {
+  const promo = await getSetting("promo", {
+    enabled: PROMO_ENABLED,
+    titleFr: PROMO_TITLE_FR,
+    titleEn: PROMO_TITLE_EN,
+    endAt:   PROMO_END_AT || null
   });
+  res.json({ promo });
+});
+
+app.get("/api/admin/promo", authRequired, async (req, res) => {
+  const promo = await getSetting("promo", {
+    enabled: PROMO_ENABLED,
+    titleFr: PROMO_TITLE_FR,
+    titleEn: PROMO_TITLE_EN,
+    endAt:   PROMO_END_AT || null
+  });
+  res.json({ promo });
+});
+
+app.post("/api/admin/promo", authRequired, async (req, res) => {
+  const { enabled, titleFr, titleEn, endAt } = req.body || {};
+  const promo = {
+    enabled: enabled !== false,
+    titleFr: String(titleFr || "").trim(),
+    titleEn: String(titleEn || "").trim(),
+    endAt:   endAt ? String(endAt).trim() : null
+  };
+  if (USE_MONGO) {
+    await setSetting("promo", promo);
+  }
+  res.json({ ok: true, promo });
 });
 
 app.post("/api/auth/login", async (req, res) => {
