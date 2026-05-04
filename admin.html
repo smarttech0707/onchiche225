@@ -63,6 +63,16 @@
 <input id="price" name="price" type="number" min="0" step="100" placeholder="5000" required>
 </div>
 <div class="field">
+<label for="category">Catégorie</label>
+<select id="category" name="category">
+  <option value="">— Sans catégorie —</option>
+  <option value="foyer">Foyer</option>
+  <option value="produit">Produit chicha</option>
+  <option value="accessoire">Accessoire</option>
+  <option value="chicha">Chicha</option>
+</select>
+</div>
+<div class="field">
 <label for="img">Image (depuis votre ordinateur, optionnel)</label>
 <input id="img" name="img" type="file" accept="image/*">
 <img id="img-preview" src="" alt="Aperçu de l'image" style="display:none;max-width:200px;margin-top:8px;border-radius:8px;border:1px solid #ddd;">
@@ -140,6 +150,7 @@ async function addProduct() {
   }
   const name = document.getElementById("name").value.trim();
   const price = document.getElementById("price").value.trim();
+  const category = document.getElementById("category").value;
   const imgInput = document.getElementById("img");
   if (!name || !price) {
     alert("Indiquez au moins le nom et le prix.");
@@ -148,6 +159,7 @@ async function addProduct() {
   const formData = new FormData();
   formData.append("name", name);
   formData.append("price", price);
+  formData.append("category", category);
   if (imgInput.files && imgInput.files[0]) {
     formData.append("img", imgInput.files[0]);
   }

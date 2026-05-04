@@ -409,28 +409,46 @@ async function loadProductsFromApi() {
   }
 }
 
+let allProducts = [];
+
+function renderProductList(filter) {
+  if (!productList) return;
+  const filtered = filter ? allProducts.filter(p => p.category === filter) : allProducts;
+  productList.innerHTML = "";
+  if (filtered.length === 0) {
+    productList.innerHTML = '<p class="loading-hint">Aucun produit dans cette catégorie.</p>';
+  } else {
+    filtered.forEach((product, index) => {
+      productList.appendChild(renderProductCard(product, index, false));
+    });
+  }
+  initRevealOnScroll();
+  initProductTilt();
+}
+
 async function initProductViews() {
   if (popularProducts) popularProducts.innerHTML = '<p class="loading-hint">Chargement…</p>';
   if (productList) productList.innerHTML = '<p class="loading-hint">Chargement…</p>';
-  const products = await loadProductsFromApi();
+  allProducts = await loadProductsFromApi();
   if (popularProducts) {
     popularProducts.innerHTML = "";
-    products.slice(0, 3).forEach((product, index) => {
+    allProducts.slice(0, 3).forEach((product, index) => {
       popularProducts.appendChild(renderProductCard(product, index, true));
     });
   }
   if (productList) {
-    productList.innerHTML = "";
-    if (products.length === 0) {
-      productList.innerHTML = '<p class="loading-hint">Aucun produit disponible.</p>';
-    } else {
-      products.forEach((product, index) => {
-        productList.appendChild(renderProductCard(product, index, false));
-      });
-    }
+    renderProductList("");
   }
-  initRevealOnScroll();
-  initProductTilt();
+
+  const catBtns = document.querySelectorAll(".cat-btn");
+  catBtns.forEach(btn => {
+    btn.addEventListener("click", function () {
+      catBtns.forEach(b => b.classList.remove("active"));
+      this.classList.add("active");
+      renderProductList(this.dataset.cat);
+      if (search) search.value = "";
+    });
+  });
 }
 
 document.addEventListener("click", function (e) {

@@ -34,10 +34,11 @@ const MONGODB_URI = process.env.MONGODB_URI || "";
 const USE_MONGO = !!MONGODB_URI;
 
 const productSchema = new mongoose.Schema({
-  id:    { type: String, required: true, unique: true },
-  name:  { type: String, required: true },
-  price: { type: Number, required: true },
-  img:   { type: String, required: true }
+  id:       { type: String, required: true, unique: true },
+  name:     { type: String, required: true },
+  price:    { type: Number, required: true },
+  img:      { type: String, required: true },
+  category: { type: String, default: "" }
 });
 const Product = mongoose.model("Product", productSchema);
 
@@ -234,11 +235,13 @@ app.post("/api/products", authRequired, upload.single("img"), async (req, res) =
     }
   }
 
+  const category = String(req.body?.category || "").trim();
   const productData = {
-    id:    `p${Date.now()}${Math.random().toString(36).slice(2, 7)}`,
+    id:       `p${Date.now()}${Math.random().toString(36).slice(2, 7)}`,
     name,
-    price: Math.round(price),
-    img
+    price:    Math.round(price),
+    img,
+    category
   };
 
   if (USE_MONGO) {

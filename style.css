@@ -635,6 +635,32 @@ main {
   animation: title-line 0.85s var(--ease-out-expo) 0.35s both;
 }
 
+.category-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.cat-btn {
+  padding: 8px 18px;
+  border: 2px solid var(--brand-primary);
+  border-radius: 50px;
+  background: transparent;
+  color: var(--brand-primary);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.cat-btn:hover,
+.cat-btn.active {
+  background: var(--brand-primary);
+  color: #fff;
+}
+
 .search-label {
   align-self: flex-start;
   max-width: 400px;
