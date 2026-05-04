@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
+const mongoose = require("mongoose");
 require("dotenv").config();
 
 const app = express();
@@ -28,6 +29,25 @@ const PROMO_TITLE_EN = String(process.env.PROMO_TITLE_EN || "Flash Deal -10% thi
 const PROMO_END_AT = String(process.env.PROMO_END_AT || "");
 const TOKEN_COOKIE = "admin_token";
 
+// ── MongoDB ──────────────────────────────────────────────────────────────────
+const MONGODB_URI = process.env.MONGODB_URI || "";
+const USE_MONGO = !!MONGODB_URI;
+
+const productSchema = new mongoose.Schema({
+  id:    { type: String, required: true, unique: true },
+  name:  { type: String, required: true },
+  price: { type: Number, required: true },
+  img:   { type: String, required: true }
+});
+const Product = mongoose.model("Product", productSchema);
+
+if (USE_MONGO) {
+  mongoose.connect(MONGODB_URI)
+    .then(() => console.log("MongoDB connecté"))
+    .catch(err => console.error("Erreur MongoDB:", err.message));
+}
+
+// ── Fallback fichier JSON ─────────────────────────────────────────────────────
 function resolveProductsPath() {
   const custom = process.env.PRODUCTS_FILE;
   if (custom && String(custom).trim()) {
@@ -52,8 +72,23 @@ function initProductsStore() {
   }
 }
 
-initProductsStore();
+if (!USE_MONGO) initProductsStore();
 
+function readProductsFile() {
+  try {
+    const raw = fs.readFileSync(PRODUCTS_PATH, "utf8");
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeProductsFile(products) {
+  fs.writeFileSync(PRODUCTS_PATH, JSON.stringify(products, null, 2), "utf8");
+}
+
+// ── Cloudinary ────────────────────────────────────────────────────────────────
 const CLOUDINARY_CONFIGURED = !!(
   process.env.CLOUDINARY_CLOUD_NAME &&
   process.env.CLOUDINARY_API_KEY &&
@@ -63,7 +98,7 @@ const CLOUDINARY_CONFIGURED = !!(
 if (CLOUDINARY_CONFIGURED) {
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
+    api_key:    process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
   });
 }
@@ -93,34 +128,20 @@ const upload = multer({
   }
 });
 
+// ── Middleware ────────────────────────────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json());
 app.use(cookieParser());
 if (!CLOUDINARY_CONFIGURED) app.use("/uploads", express.static(UPLOADS_DIR));
 
-function readProducts() {
-  try {
-    const raw = fs.readFileSync(PRODUCTS_PATH, "utf8");
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeProducts(products) {
-  fs.writeFileSync(PRODUCTS_PATH, JSON.stringify(products, null, 2), "utf8");
-}
-
+// ── Auth helpers ──────────────────────────────────────────────────────────────
 function createAdminToken() {
   return jwt.sign({ role: "admin" }, JWT_SECRET, { expiresIn: "8h" });
 }
 
 function authRequired(req, res, next) {
   const token = req.cookies[TOKEN_COOKIE];
-  if (!token) {
-    return res.status(401).json({ error: "Non authentifie" });
-  }
+  if (!token) return res.status(401).json({ error: "Non authentifie" });
   try {
     jwt.verify(token, JWT_SECRET);
     return next();
@@ -129,36 +150,37 @@ function authRequired(req, res, next) {
   }
 }
 
+// ── Routes ────────────────────────────────────────────────────────────────────
 app.get("/api/health", (req, res) => {
-  res.json({ ok: true });
+  res.json({ ok: true, db: USE_MONGO ? "mongodb" : "file" });
 });
 
-app.get("/api/products", (req, res) => {
-  res.json({ products: readProducts() });
+app.get("/api/products", async (req, res) => {
+  if (USE_MONGO) {
+    const products = await Product.find({}, "-_id id name price img").lean();
+    return res.json({ products });
+  }
+  res.json({ products: readProductsFile() });
 });
 
 app.get("/api/public-config", (req, res) => {
   res.json({
     promo: {
       enabled: PROMO_ENABLED,
-      titleFr: PROMO_TITLE_FR,
-      titleEn: PROMO_TITLE_EN,
-      endAt: PROMO_END_AT || null
+      titleFr:  PROMO_TITLE_FR,
+      titleEn:  PROMO_TITLE_EN,
+      endAt:    PROMO_END_AT || null
     }
   });
 });
 
 app.post("/api/auth/login", async (req, res) => {
   const { id, password } = req.body || {};
-  if (!id || !password) {
-    return res.status(400).json({ error: "Identifiants manquants" });
-  }
+  if (!id || !password) return res.status(400).json({ error: "Identifiants manquants" });
 
-  const idOk = String(id) === ADMIN_ID;
+  const idOk   = String(id) === ADMIN_ID;
   const passOk = await bcrypt.compare(String(password), ADMIN_PASSWORD_HASH);
-  if (!idOk || !passOk) {
-    return res.status(401).json({ error: "Identifiants invalides" });
-  }
+  if (!idOk || !passOk) return res.status(401).json({ error: "Identifiants invalides" });
 
   const token = createAdminToken();
   res.cookie(TOKEN_COOKIE, token, {
@@ -187,7 +209,7 @@ app.get("/api/auth/status", (req, res) => {
 });
 
 app.post("/api/products", authRequired, upload.single("img"), async (req, res) => {
-  const name = String(req.body?.name || "").trim();
+  const name  = String(req.body?.name || "").trim();
   const price = Number(req.body?.price);
 
   if (!name || !Number.isFinite(price) || price < 0) {
@@ -212,30 +234,40 @@ app.post("/api/products", authRequired, upload.single("img"), async (req, res) =
     }
   }
 
-  const products = readProducts();
-  const product = {
-    id: `p${Date.now()}${Math.random().toString(36).slice(2, 7)}`,
+  const productData = {
+    id:    `p${Date.now()}${Math.random().toString(36).slice(2, 7)}`,
     name,
     price: Math.round(price),
     img
   };
-  products.push(product);
-  writeProducts(products);
 
-  return res.status(201).json({ product });
+  if (USE_MONGO) {
+    const product = await new Product(productData).save();
+    return res.status(201).json({ product: productData });
+  }
+
+  const products = readProductsFile();
+  products.push(productData);
+  writeProductsFile(products);
+  return res.status(201).json({ product: productData });
 });
 
-app.delete("/api/products/:id", authRequired, (req, res) => {
+app.delete("/api/products/:id", authRequired, async (req, res) => {
   const id = String(req.params.id || "");
-  const products = readProducts();
-  const product = products.find((p) => String(p.id) === id);
-  if (!product) {
-    return res.status(404).json({ error: "Produit introuvable" });
+
+  if (USE_MONGO) {
+    const product = await Product.findOneAndDelete({ id });
+    if (!product) return res.status(404).json({ error: "Produit introuvable" });
+    return res.json({ ok: true });
   }
+
+  const products = readProductsFile();
+  const product  = products.find((p) => String(p.id) === id);
+  if (!product) return res.status(404).json({ error: "Produit introuvable" });
   if (product.img && product.img.startsWith("/uploads/")) {
     fs.unlink(path.join(__dirname, product.img), () => {});
   }
-  writeProducts(products.filter((p) => String(p.id) !== id));
+  writeProductsFile(products.filter((p) => String(p.id) !== id));
   return res.json({ ok: true });
 });
 
@@ -254,9 +286,7 @@ app.get(ADMIN_PAGE_PATH, (req, res) => {
 app.use(express.static(__dirname));
 
 app.use((req, res) => {
-  if (req.path.startsWith("/api")) {
-    return res.status(404).json({ error: "Introuvable" });
-  }
+  if (req.path.startsWith("/api")) return res.status(404).json({ error: "Introuvable" });
   if (req.method === "GET" || req.method === "HEAD") {
     return res.status(404).sendFile(path.join(__dirname, "404.html"));
   }
@@ -266,9 +296,7 @@ app.use((req, res) => {
 if (require.main === module) {
   app.listen(PORT, HOST, () => {
     console.log(`Onchiche225 running on http://${HOST}:${PORT}`);
-    if (PRODUCTS_PATH !== SEED_PRODUCTS) {
-      console.log(`Catalogue (fichier) : ${PRODUCTS_PATH}`);
-    }
+    console.log(`Stockage : ${USE_MONGO ? "MongoDB" : "fichier JSON"}`);
   });
 }
 
