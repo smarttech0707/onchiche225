@@ -783,7 +783,8 @@ window.setLanguage = setLanguage;
       <h2>🔞 Accès réservé</h2>
       <p>
         Ce site est destiné uniquement aux personnes majeures.<br><br>
-        ⚠️ La consommation de chicha est dangereuse pour la santé.<br>
+        ⚠️ La consommation abusive de chicha est dangereuse pour la santé.<br>
+        À consommer avec modération.<br>
         🚫 Interdit aux moins de 18 ans.
       </p>
       <div class="age-popup-buttons">
