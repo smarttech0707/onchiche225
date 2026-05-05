@@ -315,6 +315,15 @@ app.delete("/api/products/:id", authRequired, async (req, res) => {
   return res.json({ ok: true });
 });
 
+app.delete("/api/products", authRequired, async (req, res) => {
+  if (USE_MONGO) {
+    await Product.deleteMany({});
+    return res.json({ ok: true });
+  }
+  writeProductsFile([]);
+  return res.json({ ok: true });
+});
+
 app.get("/admin.html", (req, res, next) => {
   if (ADMIN_PAGE_PATH === "/admin.html") return next();
   return res.status(404).sendFile(path.join(__dirname, "404.html"));

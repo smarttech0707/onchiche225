@@ -104,7 +104,7 @@
 <button type="button" id="admin-logout">Se déconnecter</button>
 </div>
 
-<h3>Produits ajoutés</h3>
+<h3>Produits ajoutés <button type="button" id="btn-clear-all" style="background:#c0392b;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:0.85rem;margin-left:12px;">🗑 Tout supprimer</button></h3>
 <ul id="admin-list" class="admin-list"></ul>
 </div>
 </section>
@@ -238,6 +238,19 @@ document.getElementById("admin-list").addEventListener("click", async function (
     method: "DELETE"
   });
   if (response.ok) await renderAdminList();
+});
+
+document.getElementById("btn-clear-all").addEventListener("click", async function () {
+  const authenticated = window.isAdminAuthenticated ? await window.isAdminAuthenticated() : false;
+  if (!authenticated) return;
+  if (!confirm("Supprimer TOUS les produits ? Cette action est irréversible.")) return;
+  const response = await window.apiRequest("/api/products", { method: "DELETE" });
+  if (response.ok) {
+    alert("Tous les produits ont été supprimés.");
+    await renderAdminList();
+  } else {
+    alert("Erreur lors de la suppression.");
+  }
 });
 
 document.getElementById("img").addEventListener("change", function () {
