@@ -756,7 +756,7 @@ function initSecretAdminAccess() {
     if (buf.length > seq.length) buf = buf.slice(-seq.length);
     if (buf === seq) {
       buf = "";
-      window.location.href = "/console-gestion?k=ange225";
+      window.location.href = "/espace-admin-225";
     }
   });
 }
