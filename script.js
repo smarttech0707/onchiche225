@@ -782,7 +782,7 @@ window.setLanguage = setLanguage;
 
 // ── Popup vérification d'âge 18+ ─────────────────────────────────────────────
 (function initAgePopup() {
-  if (localStorage.getItem("ageVerified") === "true") return;
+  if (sessionStorage.getItem("ageVerified") === "true") return;
 
   const style = document.createElement("style");
   style.textContent = `
@@ -828,7 +828,7 @@ window.setLanguage = setLanguage;
   document.body.appendChild(overlay);
 
   document.getElementById("age-accept").addEventListener("click", function () {
-    localStorage.setItem("ageVerified", "true");
+    sessionStorage.setItem("ageVerified", "true");
     overlay.remove();
   });
 
