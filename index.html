@@ -19,7 +19,7 @@
 
 <body>
 
-<canvas id="smoke-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.55;"></canvas>
+<canvas id="smoke-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.8;"></canvas>
 
 <header class="site-header" style="position:relative;z-index:1;">
 
@@ -150,20 +150,20 @@
   });
 
   const particles = [];
-  const COUNT = 50;
+  const COUNT = 80;
 
   function rand(min, max) { return Math.random() * (max - min) + min; }
 
   function createParticle() {
     return {
       x: rand(0, W),
-      y: H + rand(0, 80),
-      r: rand(40, 120),
-      alpha: rand(0.25, 0.6),
-      vx: rand(-0.5, 0.5),
-      vy: rand(-0.6, -1.4),
-      grow: rand(0.2, 0.5),
-      fade: rand(0.0015, 0.004)
+      y: H + rand(0, 100),
+      r: rand(80, 200),
+      alpha: rand(0.4, 0.75),
+      vx: rand(-0.6, 0.6),
+      vy: rand(-0.5, -1.2),
+      grow: rand(0.3, 0.8),
+      fade: rand(0.001, 0.003)
     };
   }
 
@@ -178,9 +178,10 @@
     particles.forEach((p, i) => {
       ctx.beginPath();
       const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
-      grad.addColorStop(0, `rgba(80,70,200,${p.alpha})`);
-      grad.addColorStop(0.5, `rgba(60,50,160,${p.alpha * 0.5})`);
-      grad.addColorStop(1, `rgba(40,30,120,0)`);
+      grad.addColorStop(0, `rgba(70,55,190,${p.alpha})`);
+      grad.addColorStop(0.4, `rgba(50,40,150,${p.alpha * 0.6})`);
+      grad.addColorStop(0.75, `rgba(30,25,100,${p.alpha * 0.25})`);
+      grad.addColorStop(1, `rgba(20,15,80,0)`);
       ctx.fillStyle = grad;
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       ctx.fill();
